@@ -1,0 +1,71 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "GridMap.tmx": {
+            "scale": 6.293749999999999,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 89.13604766633566,
+                "y": 96.04766633565048
+            }
+        },
+        "GridMapArena.tmx": {
+            "scale": 2,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 326.5,
+                "y": 274.25
+            }
+        },
+        "GridMapArena2.tmx": {
+            "scale": 1.6783333333333332,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 359.88083416087386,
+                "y": 249.35451837140016
+            }
+        },
+        "Map.tmx": {
+            "scale": 1.2587499999999998,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 480.23833167825234,
+                "y": 480.2383316782523
+            }
+        },
+        "match3_sheet.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 2
+        },
+        "match3_sheet_cut_120.tsx": {
+            "scaleInEditor": 1.5
+        }
+    },
+    "last.externalTilesetPath": "Z:/home/davig/Elemental-Arena/ElementalArena/assets/GameResources/TileMaps",
+    "last.imagePath": "Z:/home/davig/Elemental-Arena/ElementalArena/assets/GameResources/TileMaps",
+    "map.height": 6,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 120,
+    "map.tileWidth": 120,
+    "map.width": 6,
+    "openFiles": [
+    ],
+    "project": "TileMap.tiled-project",
+    "recentFiles": [
+        "GridMapArena.tmx",
+        "match3_sheet_cut_120.tsx",
+        "match3_sheet.tsx"
+    ],
+    "tileset.lastUsedFilter": "Ficheiros de conjunto de tiles Tiled (*.tsx *.xml)",
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 120,
+        "width": 120
+    }
+}

@@ -1,0 +1,51 @@
+// onKeyDown(event: EventKeyboard) {
+    //     if (this.isMoving) return; // Prevent movement spam
+
+    //     let newPosition = this.currentPosition.clone();
+
+    //     switch (event.keyCode) {
+    //         case KeyCode.KEY_W: newPosition.y += this.tileSize; this.playAnimation("Run"); break;
+    //         case KeyCode.KEY_S: newPosition.y -= this.tileSize; this.playAnimation("Run"); break;
+    //         case KeyCode.KEY_A: newPosition.x -= this.tileSize; this.playAnimation("Run"); break;
+    //         case KeyCode.KEY_D: newPosition.x += this.tileSize; this.playAnimation("Run"); break;
+    //     }
+
+    //     // Ensure movement stays inside the grid
+    //     if (this.isValidMove(newPosition)) {
+    //         this.isMoving = true;
+    //         tween(this.node)
+    //             .to(0.2, { position: newPosition }) // Move smoothly in 0.2s
+    //             .call(() => {
+    //                 this.currentPosition = newPosition;
+    //                 this.isMoving = false;
+    //                 this.animation.stop(); // Return to idle when done
+    //             })
+    //             .start();
+    //     }
+    // }
+
+    // onTouchEnd(event) {
+    //     if (this.isMoving) return; // Prevent movement spam on touch
+
+    //     let touchLocation = event.getUILocation();
+    //     let worldPos = this.node.parent.getComponent(UITransform).convertToNodeSpaceAR(new Vec3(touchLocation.x, touchLocation.y, 0));
+
+    //     // Convert touch position to grid coordinates
+    //     let gridX = Math.floor((worldPos.x - this.gridOrigin.x) / this.tileSize);
+    //     let gridY = Math.floor((worldPos.y - this.gridOrigin.y) / this.tileSize);
+        
+        
+    //     // Ensure grid coordinates are within bounds (0 to 5 for a 6x6 grid)
+    //     gridX = Math.max(0, Math.min(5, gridX));
+    //     gridY = Math.max(0, Math.min(5, gridY));
+
+    //     // Convert grid coordinates back to world position
+    //     let snappedX = (gridX * this.tileSize) + this.gridOrigin.x;
+    //     let snappedY = (gridY * this.tileSize) + this.gridOrigin.y;
+
+    //     let newPosition = new Vec3(snappedX + this.tileSize / 2, snappedY + this.tileSize / 2, 0);//This made the character fit in the middle of the grid
+    //     this.moveToTarget(newPosition);
+       
+    //     // Update grid matrix (mark the old position as unblocked)
+    //     console.log(this.grid);
+    // }
