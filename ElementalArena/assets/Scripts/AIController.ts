@@ -36,6 +36,7 @@ export class AIController extends Component {
             this.handleDeath(); // Handle death if health is 0
         }
         this.updateHealthBar();
+        console.log(`damage taken AI: ${amount}`);
         console.log(`AI's current health: ${this.currentHealth}`);
     }
 

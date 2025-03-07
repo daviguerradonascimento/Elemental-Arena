@@ -49,7 +49,6 @@ export class GridMovement extends Component {
         this.initialAIGridX = initialAIGridX;
         this.initialAIGridY = initialAIGridY;
 
-        console.log(playerNode);
         this.currentPositionPlayer = playerNode.position;
         this.currentPositionAI = aiNode.position;
         this.initializeGrid();
@@ -91,10 +90,9 @@ export class GridMovement extends Component {
         }
 
         // Limit the path to the range
-        path = path.slice(0, this.maxMoveRange);
-
         
-        this.updateGridMatrix(path[path.length - 1], false); // End point
+
+        path = path.slice(0, this.maxMoveRange);
 
         if(isPlayer){
             this.isMovingPlayer = true;
@@ -108,7 +106,7 @@ export class GridMovement extends Component {
         let totalMoves = path.length;
         this.animation = nodeToBeMoved.getComponent(Animation);
         this.animation.play("Run");
-        console.log('movimento:' + path)
+        // console.log('movimento:' + path)
         // Function to move character tile by tile
         const moveTile = (index: number) => {
             if (index >= totalMoves) {
@@ -124,6 +122,7 @@ export class GridMovement extends Component {
                 }else{
                     this.currentPositionAI = path[path.length - 1];
                 }
+                this.initializeGrid();
                 resolve();
                 return path[path.length - 1];
             }
@@ -168,8 +167,8 @@ export class GridMovement extends Component {
         let endY = Math.floor((end.y - this.gridOrigin.y) / this.tileSize);
     
         // Ensure start and end are within the grid bounds and passable
-        if (grid[endX][endY] === 0) {
-            console.log("Start or end point is blocked");
+        if (grid[endY][endX] === 0) {
+            console.log("end point is blocked");
             return []; // No valid path if start or end is blocked
         }
     
@@ -197,13 +196,7 @@ export class GridMovement extends Component {
                     ));
                     current = current.parent;
                 }
-                
-                this.updateGridMatrix(new Vec3(
-                    startNode.x * this.tileSize + this.gridOrigin.x + this.tileSize / 2, 
-                    startNode.y * this.tileSize + this.gridOrigin.y + this.tileSize / 2, 
-                    0
-                ), true); // Start point
-
+    
                 return path.reverse(); // Return the path in the correct order
             }
     
@@ -213,7 +206,10 @@ export class GridMovement extends Component {
                 let neighborY = currentNode.y + direction[1];
     
                 // Ensure the neighbor is within bounds and passable
-                if (neighborX >= 0 && neighborX < grid.length && neighborY >= 0 && neighborY < grid[0].length && grid[neighborX][neighborY] === 1) {
+                if (neighborX >= 0 && neighborX < grid[0].length && neighborY >= 0 && neighborY < grid.length && grid[neighborY][neighborX] === 1) {
+                    
+             
+    
                     let gCost = currentNode.g + 1;
                     let hCost = Math.abs(neighborX - endNode.x) + Math.abs(neighborY - endNode.y); // Manhattan distance
                     let neighbor: Node = { x: neighborX, y: neighborY, g: gCost, h: hCost, parent: currentNode };
@@ -227,16 +223,6 @@ export class GridMovement extends Component {
         }
     
         return []; // No path found
-    }
-
-    updateGridMatrix(position: Vec3, isUnblocked: boolean) {
-        let gridX = Math.floor((position.x - this.gridOrigin.x) / this.tileSize);
-        let gridY = Math.floor((position.y - this.gridOrigin.y) / this.tileSize);
-        console.log('x:'+gridX+ ' y:'+gridY);
-        console.log(gridY);
-        if (gridX >= 0 && gridX < 6 && gridY >= 0 && gridY < 6) {
-            this.grid[gridY][gridX] = isUnblocked ? 1 : 0; // Update grid cell
-        }
     }
 
     initializeGrid() {
@@ -257,7 +243,6 @@ export class GridMovement extends Component {
             this.grid[gridY][gridX] = 0; // Mark the player's position as blocked
         }
         
-        console.log(this.grid);
     }
 
     isTileFree(x: number, y: number): boolean {

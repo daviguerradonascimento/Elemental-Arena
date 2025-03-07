@@ -9,7 +9,7 @@ export class PlayerController extends Component {
     @property(ProgressBar)
     public healthBar: ProgressBar = null;
 
-    private isPlayerActive: boolean = false; // Flag to check if the player can take actions
+    public isPlayerActive: boolean = false; // Flag to check if the player can take actions
     @property
     baseDamage: number = 5;
 
@@ -35,6 +35,7 @@ export class PlayerController extends Component {
             this.handleDeath(); // Handle death if health is 0
         }
         this.updateHealthBar();
+        console.log(`damage taken Player: ${amount}`);
         console.log(`Player's current health: ${this.currentHealth}`);
     }
 
@@ -47,11 +48,11 @@ export class PlayerController extends Component {
         const healthProgress = this.currentHealth / this.maxHealth;
         this.healthBar.progress = healthProgress;
         if (this.currentHealth <= this.maxHealth * 0.2) {
-            this.healthBar.node.getComponent(UITransform).color = new Color(255, 0, 0); // Red when health is low
+            this.healthBar.node.color = new Color(255, 0, 0); // Red when health is low
         } else if (this.currentHealth <= this.maxHealth * 0.5) {
-            this.healthBar.node.getComponent(UITransform).color = new Color(255, 255, 0); // Yellow when health is half
+            this.healthBar.node.color = new Color(255, 255, 0); // Yellow when health is half
         } else {
-            this.healthBar.node.getComponent(UITransform).color = new Color(0, 255, 0); // Green when health is high
+            this.healthBar.node.color = new Color(0, 255, 0); // Green when health is high
         }
     }
 

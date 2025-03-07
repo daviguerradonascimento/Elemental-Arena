@@ -49,3 +49,66 @@
     //     // Update grid matrix (mark the old position as unblocked)
     //     console.log(this.grid);
     // }
+
+
+    findPath(grid: number[][], start: Vec3, end: Vec3): Vec3[] {
+        // Convert the start and end positions into grid coordinates
+        let startX = Math.floor((start.x - this.gridOrigin.x) / this.tileSize);
+        let startY = Math.floor((start.y - this.gridOrigin.y) / this.tileSize);
+        let endX = Math.floor((end.x - this.gridOrigin.x) / this.tileSize);
+        let endY = Math.floor((end.y - this.gridOrigin.y) / this.tileSize);
+    
+        // Ensure start and end are within the grid bounds and passable
+        if (grid[endX][endY] === 0) {
+            console.log("Start or end point is blocked");
+            return []; // No valid path if start or end is blocked
+        }
+    
+        let openList: Node[] = [];
+        let closedList: Node[] = [];
+        
+        let startNode: Node = { x: startX, y: startY, g: 0, h: 0, parent: null };
+        let endNode: Node = { x: endX, y: endY, g: 0, h: 0, parent: null };
+        
+        openList.push(startNode);
+    
+        while (openList.length > 0) {
+            let currentNode = openList.sort((a, b) => a.g + a.h - b.g - b.h).shift()!;
+            closedList.push(currentNode);
+    
+            // Check if we've reached the end
+            if (currentNode.x === endNode.x && currentNode.y === endNode.y) {
+                let path: Vec3[] = [];
+                let current = currentNode;
+                while (current.parent) {
+                    path.push(new Vec3(
+                        current.x * this.tileSize + this.gridOrigin.x + this.tileSize / 2, 
+                        current.y * this.tileSize + this.gridOrigin.y + this.tileSize / 2, 
+                        0
+                    ));
+                    current = current.parent;
+                }
+                return path.reverse(); // Return the path in the correct order
+            }
+    
+            // Check neighbors (up, down, left, right)
+            for (let direction of [[0, 1], [1, 0], [0, -1], [-1, 0]]) {
+                let neighborX = currentNode.x + direction[0];
+                let neighborY = currentNode.y + direction[1];
+    
+                // Ensure the neighbor is within bounds and passable
+                if (neighborX >= 0 && neighborX < grid.length && neighborY >= 0 && neighborY < grid[0].length && grid[neighborX][neighborY] === 1) {
+                    let gCost = currentNode.g + 1;
+                    let hCost = Math.abs(neighborX - endNode.x) + Math.abs(neighborY - endNode.y); // Manhattan distance
+                    let neighbor: Node = { x: neighborX, y: neighborY, g: gCost, h: hCost, parent: currentNode };
+    
+                    if (!closedList.some(node => node.x === neighbor.x && node.y === neighbor.y) &&
+                        !openList.some(node => node.x === neighbor.x && node.y === neighbor.y && gCost >= node.g)) {
+                        openList.push(neighbor);
+                    }
+                }
+            }
+        }
+    
+        return []; // No path found
+    }
