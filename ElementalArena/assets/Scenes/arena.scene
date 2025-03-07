@@ -23,7 +23,7 @@
     "_active": true,
     "_components": [],
     "_prefab": {
-      "__id__": 42
+      "__id__": 43
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -54,7 +54,7 @@
     },
     "autoReleaseAssets": false,
     "_globals": {
-      "__id__": 43
+      "__id__": 44
     },
     "_id": "3fd1e7ec-c8ba-4798-9705-2cbcbf88c702"
   },
@@ -89,13 +89,13 @@
     "_active": true,
     "_components": [
       {
-        "__id__": 39
-      },
-      {
         "__id__": 40
       },
       {
         "__id__": 41
+      },
+      {
+        "__id__": 42
       }
     ],
     "_prefab": null,
@@ -940,6 +940,7 @@
     },
     "_enabled": true,
     "__prefab": null,
+    "baseDamage": 5,
     "_id": "8dC2nWnStKtKLCRnbvwI44"
   },
   {
@@ -1157,6 +1158,7 @@
     "__prefab": null,
     "aiSpeed": 0.2,
     "maxMoveRange": 3,
+    "baseDamage": 5,
     "_id": "d3AXo+cdBHJ5E/uQrnVSSh"
   },
   {
@@ -1178,6 +1180,9 @@
       },
       {
         "__id__": 38
+      },
+      {
+        "__id__": 39
       }
     ],
     "_prefab": null,
@@ -1273,6 +1278,18 @@
     "_id": "a2u3PV7YZKFo9TJP7Dn016"
   },
   {
+    "__type__": "0d15chXEVBFmrTWFLsoVU2s",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": {
+      "__id__": 35
+    },
+    "_enabled": true,
+    "__prefab": null,
+    "_id": "96nx7z2CRIk4Hww+K9s2Iq"
+  },
+  {
     "__type__": "cc.UITransform",
     "_name": "",
     "_objFlags": 0,
@@ -1351,28 +1368,28 @@
   {
     "__type__": "cc.SceneGlobals",
     "ambient": {
-      "__id__": 44
-    },
-    "shadows": {
       "__id__": 45
     },
-    "_skybox": {
+    "shadows": {
       "__id__": 46
     },
-    "fog": {
+    "_skybox": {
       "__id__": 47
     },
-    "octree": {
+    "fog": {
       "__id__": 48
     },
-    "skin": {
+    "octree": {
       "__id__": 49
     },
-    "lightProbeInfo": {
+    "skin": {
       "__id__": 50
     },
-    "postSettings": {
+    "lightProbeInfo": {
       "__id__": 51
+    },
+    "postSettings": {
+      "__id__": 52
     },
     "bakedWithStationaryMainLight": false,
     "bakedWithHighpLightmap": false

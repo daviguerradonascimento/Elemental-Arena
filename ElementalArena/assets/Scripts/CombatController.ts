@@ -34,17 +34,17 @@ export class CombatController extends Component {
         
         // Check if the attacker has a terrain advantage
         if (ElementalAdvantage[attacker] === defender) {
-            console.log(`${attacker} has advantage over ${defender}!`);
+            // console.log(`${attacker} has advantage over ${defender}!`);
             baseDamage *= 1.5; 
             if (SpecialTerrainBonus[attacker]) {
-                console.log(`${attacker} is on special terrain, dealing extra damage!`);
+                // console.log(`${attacker} is on special terrain, dealing extra damage!`);
                 baseDamage *= SpecialTerrainBonus[attacker]; // Increase damage if attacker is on special terrain
             }
         }
         
         // Check if the defender has a terrain disadvantage
         if (ElementalAdvantage[defender] === attacker) {
-            console.log(`${defender} has a advantage against ${attacker}!`);
+            // console.log(`${defender} has a advantage against ${attacker}!`);
             baseDamage /= 1.5; 
         }
     

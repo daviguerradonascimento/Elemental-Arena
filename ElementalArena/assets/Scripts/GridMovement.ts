@@ -31,9 +31,10 @@ export class GridMovement extends Component {
     private initialAIGridX: number = 5;
     private initialAIGridY: number = 5;
 
-    private isMoving: boolean = false;
-    private currentPositionPlayer: Vec3 = new Vec3(50, -300, 0);
-    private currentPositionAI: Vec3 = new Vec3(50, -300, 0);
+    public isMovingPlayer: boolean = false;
+    public isMovingAI: boolean = false;
+    public currentPositionPlayer: Vec3 = new Vec3(50, -300, 0);
+    public currentPositionAI: Vec3 = new Vec3(50, -300, 0);
     public gridOrigin: Vec3 = new Vec3(-360, -360, 0); // Adjust based on Tiled origin
 
     public grid: number[][] = [];
@@ -73,8 +74,10 @@ export class GridMovement extends Component {
         this.currentPositionAI = newAIPosition;
     }
 
-    moveToTarget(target: Vec3, isPlayer: boolean = true) {
-        if (this.isMoving) return;
+    moveToTarget(target: Vec3, isPlayer: boolean = true): Promise<void> {
+        return new Promise((resolve) => {
+        if (this.isMovingPlayer && isPlayer){ resolve();  return;}
+        if (this.isMovingAI && !isPlayer){  resolve();return;}
         
         let nodeToBeMoved = isPlayer? this.playerNode : this.aiNode;
         let currentPosition = isPlayer? this.currentPositionPlayer : this.currentPositionAI;
@@ -83,6 +86,7 @@ export class GridMovement extends Component {
 
         if (path.length === 0) {
             console.log("No path found");
+            resolve();
             return;
         }
 
@@ -91,7 +95,12 @@ export class GridMovement extends Component {
 
         
         this.updateGridMatrix(path[path.length - 1], false); // End point
-        this.isMoving = true;
+
+        if(isPlayer){
+            this.isMovingPlayer = true;
+        }else{
+            this.isMovingAI = true;
+        }
 
   
         let moveDuration = 0.2; // Time to move between tiles    
@@ -99,13 +108,23 @@ export class GridMovement extends Component {
         let totalMoves = path.length;
         this.animation = nodeToBeMoved.getComponent(Animation);
         this.animation.play("Run");
-    
+        console.log('movimento:' + path)
         // Function to move character tile by tile
         const moveTile = (index: number) => {
             if (index >= totalMoves) {
                 // Movement is complete
-                this.isMoving = false;
+                if(isPlayer){
+                    this.isMovingPlayer = false;
+                }else{
+                    this.isMovingAI = false;
+                }
                 this.animation.stop();
+                if(isPlayer){
+                    this.currentPositionPlayer = path[path.length - 1];
+                }else{
+                    this.currentPositionAI = path[path.length - 1];
+                }
+                resolve();
                 return path[path.length - 1];
             }
     
@@ -116,9 +135,11 @@ export class GridMovement extends Component {
                 .to(moveDuration, { position: nextPosition }) // Move to next position in path
                 .call(() => {
                     if(isPlayer){
-                        this.currentPositionPlayer = nextPosition;
+                        this.currentPositionPlayer = path[path.length - 1];
+                        // this.playerNode.setPosition(path[path.length - 1]);
                     }else{
-                        this.currentPositionAI = nextPosition;
+                        this.currentPositionAI = path[path.length - 1];
+                        // this.aiNode.setPosition(path[path.length - 1]);
                     }
                      // Update the current position after the move
                     moveTile(index + 1); // Move to the next tile after the current move finishes
@@ -127,8 +148,9 @@ export class GridMovement extends Component {
         };
     
         // Start moving from the first tile in the path
-        moveTile(0);
-        return path[path.length - 1]
+            moveTile(0);
+            return path[path.length - 1]
+        });
         // console.log("Path to move:", path);
     }
     
@@ -238,15 +260,7 @@ export class GridMovement extends Component {
         console.log(this.grid);
     }
 
-    // updateGridMatrixFromPlayers() {
-    //     for (let player of this.players) {
-    //         let gridX = Math.floor((player.position.x - this.gridOrigin.x) / this.tileSize);
-    //         let gridY = Math.floor((player.position.y - this.gridOrigin.y) / this.tileSize);
-
-    //         // Ensure the player is within bounds
-    //         if (gridX >= 0 && gridX < 6 && gridY >= 0 && gridY < 6) {
-    //             this.grid[gridY][gridX] = 0; // Mark the player's position as blocked
-    //         }
-    //     }
-    // }
+    isTileFree(x: number, y: number): boolean {
+        return this.grid[y] && this.grid[y][x] === 1;
+    }
 }
