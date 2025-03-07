@@ -56,14 +56,6 @@ export class GridMovement extends Component {
 
     }
 
-    // start() {
-    //     this.currentPositionPlayer = this.playerNode.position;
-    //     this.currentPositionAI = this.aiNode.position;
-    //     // this.animation = this.node.getComponent(Animation);
-    //     this.initializeGrid();
-
-    // }
-
     setInitialPlayerPosition() {
         // Set player position directly
         let newPlayerPosition = new Vec3(this.gridOrigin.x + this.initialGridX * this.tileSize + this.tileSize / 2, 
@@ -114,7 +106,7 @@ export class GridMovement extends Component {
                 // Movement is complete
                 this.isMoving = false;
                 this.animation.stop();
-                return;
+                return path[path.length - 1];
             }
     
             // Move to the next tile in the path
@@ -136,6 +128,7 @@ export class GridMovement extends Component {
     
         // Start moving from the first tile in the path
         moveTile(0);
+        return path[path.length - 1]
         // console.log("Path to move:", path);
     }
     

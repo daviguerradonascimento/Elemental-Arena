@@ -2,6 +2,8 @@ import { _decorator, Component, Node, UITransform, EventTouch, Vec3 } from 'cc';
 import { AIController } from './AIController';
 import { GridMovement } from './GridMovement'; // Assuming GridMovement is being used for the player as well
 import { PlayerController } from './PlayerController';
+import { CombatController } from './CombatController';
+import { TilemapGenerator } from './TileMapGenerator';
 
 const { ccclass, property } = _decorator;
 
@@ -19,27 +21,22 @@ export class GameController extends Component {
     private playerController: PlayerController;
     private aiController: AIController;
     private gridMovement: GridMovement;
+    private combatController: CombatController;
+    private tileMapController: TilemapGenerator;
 
     start() {
 
-        if (!this.node.getComponent(UITransform)) {
-            console.log("Adding UITransform...");
-            this.node.addComponent(UITransform);
-        }
         // Initialize controllers
         this.playerController = this.player.getComponent(PlayerController);
         this.aiController = this.ai.getComponent(AIController);
-        // this.gridMovement = this.player.getComponent(GridMovement); // Assuming GridMovement is the player movement handler
-        if (!this.player) {
-            console.error("Player node is not assigned in the editor.");
-            return;
-        }
+        this.combatController = this.node.getComponent(CombatController);
+        this.tileMapController = this.node.getComponent(TilemapGenerator);
+
         try {
             this.gridMovement = new GridMovement(this.player, 1, 1, this.ai, 5, 5);
         } catch (error) {
             console.error("Error initializing GridMovement:", error);
         }
-        // this.gridMovement.initialize();
 
         if (!this.playerController || !this.aiController) {
             console.error("PlayerController or AIController not attached properly.");
@@ -52,25 +49,18 @@ export class GameController extends Component {
     }
 
     onTouchEnd(event: EventTouch) {
-        console.log('teste')
         if (!this.playerTurn) return; // Only allow movement during player's turn
 
         let touchLocation = event.getUILocation();
-        console.log(touchLocation)
         let worldPos = this.node.parent.getComponent(UITransform).convertToNodeSpaceAR(
             new Vec3(touchLocation.x, touchLocation.y, 0)
         );
 
-        let gridX = Math.floor((worldPos.x - this.gridMovement.gridOrigin.x) / this.gridMovement.tileSize);
-        let gridY = Math.floor((worldPos.y - this.gridMovement.gridOrigin.y) / this.gridMovement.tileSize);
-
-        // Ensure grid coordinates are within bounds (0 to 5 for a 6x6 grid)
-        gridX = Math.max(0, Math.min(5, gridX));
-        gridY = Math.max(0, Math.min(5, gridY));
+        let grid = this.tileMapController.worldPosToGridCoords(worldPos, this.gridMovement.gridOrigin, this.gridMovement.tileSize)
 
         // Convert grid coordinates back to world position
-        let snappedX = (gridX * this.gridMovement.tileSize) + this.gridMovement.gridOrigin.x;
-        let snappedY = (gridY * this.gridMovement.tileSize) + this.gridMovement.gridOrigin.y;
+        let snappedX = (grid.x * this.gridMovement.tileSize) + this.gridMovement.gridOrigin.x;
+        let snappedY = (grid.y * this.gridMovement.tileSize) + this.gridMovement.gridOrigin.y;
 
         let newPosition = new Vec3(
             snappedX + this.gridMovement.tileSize / 2,
@@ -79,22 +69,14 @@ export class GameController extends Component {
         );
 
         // Move the player and end the turn
-        this.gridMovement.moveToTarget(newPosition);
-        this.endTurn();
-    }
+        let actualPosition = this.gridMovement.moveToTarget(newPosition);
 
-    startAITurn() {
-        if (this.playerTurn) return;
-        
-       if (this.player) {
-            // Here we get the player's position as the target
-            let playerPosition = this.player.position;
-
-            // Call the GridMovement method to move the AI towards the player
-            this.gridMovement.moveToTarget(playerPosition, false);
-        }
-        
-        // After movement ends, change turn
+        let gridPlayer = this.tileMapController.worldPosToGridCoords(actualPosition, this.gridMovement.gridOrigin, this.gridMovement.tileSize)
+        let gridAI = this.tileMapController.worldPosToGridCoords(this.ai.position, this.gridMovement.gridOrigin, this.gridMovement.tileSize)
+        // console.log('posicao player'+ this.tileMapController.getTerrainAt(gridPlayer.x, gridPlayer.y))
+        // console.log('posicao ai'+ this.tileMapController.getTerrainAt(gridAI.x, gridAI.y))  
+        let damage = this.combatController.calculateDamage( this.tileMapController.getTerrainAt(gridPlayer.x, gridPlayer.y),  this.tileMapController.getTerrainAt(gridAI.x, gridAI.y), this.playerController.baseDamage)
+        console.log(damage);
         this.endTurn();
     }
 
@@ -124,4 +106,69 @@ export class GameController extends Component {
         this.playerTurn = !this.playerTurn;
         this.startTurn(); // Start the next turn
     }
+
+    startAITurn() {
+        if (this.playerTurn) return;
+        console.log('turno da ia')
+       if (this.player) {
+            // Here we get the player's position as the target
+            // let playerPosition = this.player.position;
+        console.log('turno da ia')
+            // Call the GridMovement method to move the AI towards the player
+            let aiMove = this.getBestMoveAI();
+            let snappedX = (aiMove.x * this.gridMovement.tileSize) + this.gridMovement.gridOrigin.x;
+            let snappedY = (aiMove.y * this.gridMovement.tileSize) + this.gridMovement.gridOrigin.y;
+
+            let newPosition = new Vec3(
+                snappedX + this.gridMovement.tileSize / 2,
+                snappedY + this.gridMovement.tileSize / 2,
+                0
+            );
+
+            this.gridMovement.moveToTarget(newPosition, false);
+        }
+        
+        // After movement ends, change turn
+        this.endTurn();
+    }
+
+    getBestMoveAI(): Vec3 | null {
+        let maxDamage = -Infinity;
+        let bestMove: Vec3 | null = null;
+
+        // Loop over all possible tiles within movement range
+        
+        let aiPosition = this.tileMapController.worldPosToGridCoords(this.ai.position, this.gridMovement.gridOrigin, this.gridMovement.tileSize);        
+        let playerPosition = this.tileMapController.worldPosToGridCoords(this.ai.position, this.gridMovement.gridOrigin, this.gridMovement.tileSize);
+
+        for (let dx = -this.aiController.maxMoveRange; dx <= this.aiController.maxMoveRange; dx++) {
+            for (let dy = -this.aiController.maxMoveRange; dy <= this.aiController.maxMoveRange; dy++) {
+                let targetX = aiPosition.x + dx;
+                let targetY = aiPosition.y + dy;
+
+                // Check if the position is within grid bounds
+                if (this.isValidPosition(targetX, targetY)) {
+                    let terrainAtTarget = this.tileMapController.getTerrainAt(targetX, targetY);
+                    let playerTerrain = this.tileMapController.getTerrainAt(playerPosition.x, playerPosition.y);
+                    
+                    // Calculate the potential damage
+                    let damage = this.combatController.calculateDamage(terrainAtTarget, playerTerrain, this.aiController.baseDamage);
+
+                    // If this move results in higher damage, update bestMove
+                    if (damage > maxDamage) {
+                        maxDamage = damage;
+                        bestMove = new Vec3(targetX, targetY, 0);
+                    }
+                }
+            }
+        }
+
+        return bestMove;
+    }
+
+    isValidPosition(x: number, y: number): boolean {
+        // Check if the target position is within the 6x6 grid bounds
+        return x >= 0 && y >= 0 && x < 6 && y < 6;
+    }
+    
 }

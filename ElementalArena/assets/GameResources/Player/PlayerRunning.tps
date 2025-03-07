@@ -122,6 +122,10 @@
         <key>dataFileNames</key>
         <map type="GFileNameMap">
             <key>data</key>
+            <struct type="DataFile">
+                <key>name</key>
+                <filename>spritess.plist</filename>
+            </struct>
             <key>header</key>
             <key>source</key>
             <struct type="DataFile">
@@ -171,7 +175,7 @@
             <key>defaultPivotPoint</key>
             <point_f>0.5,0.5</point_f>
             <key>writePivotPoints</key>
-            <false/>
+            <true/>
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
@@ -193,6 +197,7 @@
             </struct>
             <key type="filename">C:/Users/davig/Downloads/sorlosupersheet-ezgif.com-crop (2).png</key>
             <key type="filename">C:/Users/davig/Downloads/sorlosupersheet-ezgif.com-crop (3).png</key>
+            <key type="filename">C:/Users/davig/Downloads/sorlosupersheet-ezgif.com-crop__3_-removebg-preview.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -241,6 +246,9 @@
             <key type="filename">C:/Users/davig/Downloads/sorlosupersheet-ezgif.com-crop (7).png</key>
             <key type="filename">C:/Users/davig/Downloads/sorlosupersheet-ezgif.com-crop (8).png</key>
             <key type="filename">C:/Users/davig/Downloads/sorlosupersheet-ezgif.com-crop (9).png</key>
+            <key type="filename">C:/Users/davig/Downloads/sorlosupersheet-ezgif.com-crop__6_-removebg-preview.png</key>
+            <key type="filename">C:/Users/davig/Downloads/sorlosupersheet-ezgif.com-crop__8_-removebg-preview.png</key>
+            <key type="filename">C:/Users/davig/Downloads/sorlosupersheet-ezgif.com-crop__9_-removebg-preview.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -272,6 +280,10 @@
                     <filename>C:/Users/davig/Downloads/sorlosupersheet-ezgif.com-crop (7).png</filename>
                     <filename>C:/Users/davig/Downloads/sorlosupersheet-ezgif.com-crop (8).png</filename>
                     <filename>C:/Users/davig/Downloads/sorlosupersheet-ezgif.com-crop (9).png</filename>
+                    <filename>C:/Users/davig/Downloads/sorlosupersheet-ezgif.com-crop__9_-removebg-preview.png</filename>
+                    <filename>C:/Users/davig/Downloads/sorlosupersheet-ezgif.com-crop__3_-removebg-preview.png</filename>
+                    <filename>C:/Users/davig/Downloads/sorlosupersheet-ezgif.com-crop__6_-removebg-preview.png</filename>
+                    <filename>C:/Users/davig/Downloads/sorlosupersheet-ezgif.com-crop__8_-removebg-preview.png</filename>
                 </array>
             </struct>
         </map>

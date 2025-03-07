@@ -7,10 +7,8 @@ const { ccclass, property } = _decorator;
 export class PlayerController extends Component {
 
     private isPlayerActive: boolean = false; // Flag to check if the player can take actions
-
-    start() {
-        this.node.parent.on(SystemEventType.TOUCH_END, this.onTouchEnd, this); // Handle player movement
-    }
+    @property
+    baseDamage: number = 5;
 
     enableControls(enable: boolean) {
         this.isPlayerActive = enable; // Enable/disable player controls
