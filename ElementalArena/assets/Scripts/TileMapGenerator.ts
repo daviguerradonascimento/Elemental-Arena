@@ -54,7 +54,7 @@ export class TilemapGenerator extends Component {
 
         // Calculate the total number of tiles
         const totalCount = this.arenaSize * this.arenaSize;
-        const specialCount = 2; // Number of special tiles for each element
+        const specialCount = 1; // Number of special tiles for each element
         const regularCount = (totalCount - (specialCount * 3)) / 3; // Number of regular tiles for each element
 
         // Create arrays for the terrain types (balanced and special ones included)
@@ -65,7 +65,7 @@ export class TilemapGenerator extends Component {
             terrains.push(TerrainType.Fire, TerrainType.Water, TerrainType.Earth);
         }
 
-        // Add special tiles (2 for each terrain type)
+        // Add special tiles (1 for each terrain type)
         for (let i = 0; i < specialCount; i++) {
             terrains.push(TerrainType.FireSpecial, TerrainType.WaterSpecial, TerrainType.EarthSpecial);
         }

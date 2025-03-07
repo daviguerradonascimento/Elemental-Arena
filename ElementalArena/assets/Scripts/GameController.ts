@@ -73,10 +73,9 @@ export class GameController extends Component {
 
         let gridPlayer = this.tileMapController.worldPosToGridCoords(this.player.position, this.gridMovement.gridOrigin, this.gridMovement.tileSize)
         let gridAI = this.tileMapController.worldPosToGridCoords(this.ai.position, this.gridMovement.gridOrigin, this.gridMovement.tileSize)
-        // console.log('posicao player'+ this.tileMapController.getTerrainAt(gridPlayer.x, gridPlayer.y))
-        // console.log('posicao ai'+ this.tileMapController.getTerrainAt(gridAI.x, gridAI.y))  
         let damage = this.combatController.calculateDamage( this.tileMapController.getTerrainAt(gridPlayer.x, gridPlayer.y),  this.tileMapController.getTerrainAt(gridAI.x, gridAI.y), this.playerController.baseDamage)
         console.log(damage);
+        this.aiController.takeDamage(damage);
         this.endTurn();
     }
 
@@ -109,26 +108,14 @@ export class GameController extends Component {
 
     async startAITurn() {
         if (this.playerTurn) return;
-        console.log('turno da ia')
-
-        console.log('Before Update - AI:', this.gridMovement.currentPositionAI);
-        console.log('Before Update - Player:', this.gridMovement.currentPositionPlayer);
     
         // Update positions from actual node positions
        
 
        if (this.player) {
-
-            // Here we get the player's position as the target
-            // let playerPosition = this.player.position;
             this.gridMovement.currentPositionAI = this.ai.position;
             this.gridMovement.currentPositionPlayer = this.player.position;
         
-            // Debug: Check positions after update
-            console.log('After Update - AI:', this.gridMovement.currentPositionAI);
-            console.log('After Update - Player:', this.gridMovement.currentPositionPlayer);
-            console.log('turno da ia')
-            // Call the GridMovement method to move the AI towards the player
             let aiMove = this.getBestMoveAI();
             let snappedX = (aiMove.x * this.gridMovement.tileSize) + this.gridMovement.gridOrigin.x;
             let snappedY = (aiMove.y * this.gridMovement.tileSize) + this.gridMovement.gridOrigin.y;
@@ -140,6 +127,10 @@ export class GameController extends Component {
             );
             console.log(newPosition);
             await this.gridMovement.moveToTarget(newPosition, false);
+            let gridPlayer = this.tileMapController.worldPosToGridCoords(this.player.position, this.gridMovement.gridOrigin, this.gridMovement.tileSize)
+            let gridAI = this.tileMapController.worldPosToGridCoords(this.ai.position, this.gridMovement.gridOrigin, this.gridMovement.tileSize)
+            let damage = this.combatController.calculateDamage( this.tileMapController.getTerrainAt(gridPlayer.x, gridPlayer.y),  this.tileMapController.getTerrainAt(gridAI.x, gridAI.y), this.playerController.baseDamage)
+            this.playerController.takeDamage(damage);
         }
         
         // After movement ends, change turn
@@ -170,7 +161,7 @@ export class GameController extends Component {
                 );
 
                 // Check if the position is within grid bounds
-                if (this.isValidPosition(targetX, targetY) && this.gridMovement.isTileFree(targetX, targetY) && this.gridMovement.findPath(this.gridMovement.grid,this.gridMovement.currentPositionAI, newPosition).length >0) {
+                if (this.isValidPosition(targetX, targetY) && this.gridMovement.isTileFree(targetX, targetY) && this.gridMovement.findPath(this.gridMovement.grid,this.gridMovement.currentPositionAI, newPosition).length > 0) {
                     let terrainAtTarget = this.tileMapController.getTerrainAt(targetX, targetY);
                     let playerTerrain = this.tileMapController.getTerrainAt(playerPosition.x, playerPosition.y);
                     
