@@ -1,4 +1,4 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node, UITransform, EventTouch, Vec3 } from 'cc';
 import { AIController } from './AIController';
 import { GridMovement } from './GridMovement'; // Assuming GridMovement is being used for the player as well
 import { PlayerController } from './PlayerController';
@@ -21,6 +21,11 @@ export class GameController extends Component {
     private gridMovement: GridMovement;
 
     start() {
+
+        if (!this.node.getComponent(UITransform)) {
+            console.log("Adding UITransform...");
+            this.node.addComponent(UITransform);
+        }
         // Initialize controllers
         this.playerController = this.player.getComponent(PlayerController);
         this.aiController = this.ai.getComponent(AIController);
@@ -42,38 +47,52 @@ export class GameController extends Component {
         }
 
         // Start the game with the player’s turn
+        this.node.on(Node.EventType.TOUCH_START , this.onTouchEnd, this);
         this.startTurn();
     }
 
-    startPlayerTurn() {
-        if (!this.playerTurn) return;
+    onTouchEnd(event: EventTouch) {
+        console.log('teste')
+        if (!this.playerTurn) return; // Only allow movement during player's turn
+
+        let touchLocation = event.getUILocation();
+        console.log(touchLocation)
+        let worldPos = this.node.parent.getComponent(UITransform).convertToNodeSpaceAR(
+            new Vec3(touchLocation.x, touchLocation.y, 0)
+        );
+
+        let gridX = Math.floor((worldPos.x - this.gridMovement.gridOrigin.x) / this.gridMovement.tileSize);
+        let gridY = Math.floor((worldPos.y - this.gridMovement.gridOrigin.y) / this.gridMovement.tileSize);
+
+        // Ensure grid coordinates are within bounds (0 to 5 for a 6x6 grid)
+        gridX = Math.max(0, Math.min(5, gridX));
+        gridY = Math.max(0, Math.min(5, gridY));
+
+        // Convert grid coordinates back to world position
+        let snappedX = (gridX * this.gridMovement.tileSize) + this.gridMovement.gridOrigin.x;
+        let snappedY = (gridY * this.gridMovement.tileSize) + this.gridMovement.gridOrigin.y;
+
+        let newPosition = new Vec3(
+            snappedX + this.gridMovement.tileSize / 2,
+            snappedY + this.gridMovement.tileSize / 2,
+            0
+        );
+
+        // Move the player and end the turn
+        this.gridMovement.moveToTarget(newPosition);
+        this.endTurn();
+    }
+
+    startAITurn() {
+        if (this.playerTurn) return;
         
-        this.node.on(Node.EventType.TOUCH_END, () => {
+       if (this.player) {
+            // Here we get the player's position as the target
+            let playerPosition = this.player.position;
 
-            let touchLocation = event.getUILocation();
-            // let target = this.node.parent.getComponent(UITransform).convertToNodeSpaceAR(new Vec3(touchLocation.x, touchLocation.y, 0));
-            let worldPos = this.node.parent.getComponent(UITransform).convertToNodeSpaceAR(new Vec3(touchLocation.x, touchLocation.y, 0));
-
-
-            let gridX = Math.floor((worldPos.x - this.gridMovement.gridOrigin.x) / this.gridMovement.tileSize);
-            let gridY = Math.floor((worldPos.y - this.gridMovement.gridOrigin.y) / this.gridMovement.tileSize);
-            
-            
-            // Ensure grid coordinates are within bounds (0 to 5 for a 6x6 grid)
-            gridX = Math.max(0, Math.min(5, gridX));
-            gridY = Math.max(0, Math.min(5, gridY));
-    
-            // Convert grid coordinates back to world position
-            let snappedX = (gridX * this.gridMovement.tileSize) + this.gridMovement.gridOrigin.x;
-            let snappedY = (gridY * this.gridMovement.tileSize) + this.gridMovement.gridOrigin.y;
-    
-            let newPosition = new Vec3(snappedX + this.gridMovement.tileSize / 2, snappedY + this.gridMovement.tileSize / 2, 0);//This made the character fit in the middle of the grid
-
-            this.gridMovement.moveToTarget(newPosition);
-        })
-
-        // Trigger player movement in GridMovement
-        // this.gridMovement.moveToTarget(target);
+            // Call the GridMovement method to move the AI towards the player
+            this.gridMovement.moveToTarget(playerPosition, false);
+        }
         
         // After movement ends, change turn
         this.endTurn();
@@ -84,7 +103,7 @@ export class GameController extends Component {
             console.log("Player's turn");
 
             // Allow the player to act
-            this.startPlayerTurn();
+            // this.startPlayerTurn();
             this.playerController.enableControls(true); // Enable player controls
             this.aiController.enableControls(false); // Disable AI controls during player’s turn
 
@@ -96,10 +115,7 @@ export class GameController extends Component {
             this.playerController.enableControls(false); // Disable player controls during AI’s turn
 
             // AI takes its turn (you can make this behavior asynchronous)
-            this.aiController.takeTurn(() => {
-                // Once AI finishes its turn, move to the next turn
-                this.endTurn();
-            });
+            this.startAITurn();
         }
     }
 
