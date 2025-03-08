@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, UITransform, EventTouch, Vec3, Label } from 'cc';
+import { _decorator, Component, Node, UITransform, EventTouch, Vec3, Label, Button, director, game } from 'cc';
 import { AIController } from './AIController';
 import { GridMovement } from './GridMovement'; // Assuming GridMovement is being used for the player as well
 import { PlayerController } from './PlayerController';
@@ -21,11 +21,22 @@ export class GameController extends Component {
     @property(Label)
     gameOverLabel: Label;
 
+    @property(Label)
+    turnInfoLabel: Label;
+
+    @property(Label)
+    turnNumberLabel: Label;
+
+    // @property(Button)
+    // restartButton: Button = null;
+
     private playerController: PlayerController;
     private aiController: AIController;
     private gridMovement: GridMovement;
     private combatController: CombatController;
     private tileMapController: TilemapGenerator;
+
+    private turn: number = 1;
 
     start() {
 
@@ -35,11 +46,12 @@ export class GameController extends Component {
         this.combatController = this.node.getComponent(CombatController);
         this.tileMapController = this.node.getComponent(TilemapGenerator);
 
+        // this.restartButton.node.active = false;
         this.gameOverLabel.active = false;
         this.gameOverLabel.string = '';
 
         try {
-            this.gridMovement = new GridMovement(this.player, 1, 1, this.ai, 5, 5);
+            this.gridMovement = new GridMovement(this.player, 0, 0, this.ai, 5, 5);
         } catch (error) {
             console.error("Error initializing GridMovement:", error);
         }
@@ -51,21 +63,18 @@ export class GameController extends Component {
 
         // Start the game with the player’s turn
         this.node.on(Node.EventType.TOUCH_START , this.onTouchEnd, this);
+        // this.restartButton.node.on('click', this.onRestartClick, this);
         this.startTurn();
     }
 
     startTurn() {
         if (this.playerTurn) {
-            console.log("Player's turn");
-
-            // Allow the player to act
-            // this.startPlayerTurn();
+            this.changeTurnInfo(true);
             this.playerController.enableControls(true); // Enable player controls
             this.aiController.enableControls(false); // Disable AI controls during player’s turn
 
         } else {
-            console.log("AI's turn");
-
+            this.changeTurnInfo(false);
             // Allow the AI to act
             this.aiController.enableControls(true); // Enable AI controls
             this.playerController.enableControls(false); // Disable player controls during AI’s turn
@@ -101,7 +110,7 @@ export class GameController extends Component {
             0
         );
         // Move the player and end the turn
-        await this.gridMovement.moveToTarget(newPosition);
+        await this.gridMovement.moveToTarget(newPosition, true, this.playerController.maxMoveRange);
 
         let gridPlayer = this.tileMapController.worldPosToGridCoords(this.player.position, this.gridMovement.gridOrigin, this.gridMovement.tileSize)
         let gridAI = this.tileMapController.worldPosToGridCoords(this.ai.position, this.gridMovement.gridOrigin, this.gridMovement.tileSize)
@@ -136,7 +145,7 @@ export class GameController extends Component {
                 0
             );
 
-            await this.gridMovement.moveToTarget(newPosition, false);
+            await this.gridMovement.moveToTarget(newPosition, false, this.aiController.maxMoveRange);
             let gridPlayer = this.tileMapController.worldPosToGridCoords(this.player.position, this.gridMovement.gridOrigin, this.gridMovement.tileSize)
             let gridAI = this.tileMapController.worldPosToGridCoords(this.ai.position, this.gridMovement.gridOrigin, this.gridMovement.tileSize)
             let damage = this.combatController.calculateDamage(this.tileMapController.getTerrainAt(gridAI.x, gridAI.y), this.tileMapController.getTerrainAt(gridPlayer.x, gridPlayer.y), this.playerController.baseDamage)
@@ -199,6 +208,19 @@ export class GameController extends Component {
         return x >= 0 && y >= 0 && x < 6 && y < 6;
     }
 
+    changeTurnInfo(isPlayer:boolean) {
+
+        // Update the message based on who won
+        if (isPlayer) {
+            this.turnInfoLabel.string = "Your Turn";
+        } else {
+            this.turnInfoLabel.string = "Enemy Turn";
+        }
+        this.turnNumberLabel.string = "Turn: " + this.turn;
+
+        this.turn++;
+    }
+
     isGameOver(): boolean {
         // Check if either player or AI has died
         return this.playerController.currentHealth <= 0 || this.aiController.currentHealth <= 0;
@@ -217,6 +239,17 @@ export class GameController extends Component {
             this.gameOverLabel.string = "You Wins!";
         }
         this.gameOverLabel.active = true;
+        // this.restartButton.node.active = true;
     }
+
+    // onRestartClick() {
+    //     // Reload the current scene to restart the game
+
+
+    //     setTimeout(() => {
+    //         // Reload the scene as if it's the first time
+    //         director.loadScene('mainMenu');
+    //     }, 100); // Adjust delay if necessary
+    // }
     
 }

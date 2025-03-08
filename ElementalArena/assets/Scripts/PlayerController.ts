@@ -19,6 +19,9 @@ export class PlayerController extends Component {
     @property
     public currentHealth: number = 100;
 
+    @property
+    maxMoveRange: number = 3;
+
     start() {
         this.node.getComponent(ProgressBar);
         this.updateHealthBar();

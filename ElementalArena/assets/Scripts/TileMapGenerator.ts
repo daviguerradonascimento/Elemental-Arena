@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Prefab, instantiate, Vec3, UITransform, randomRangeInt, Sprite, Color } from 'cc';
+import { _decorator, Component, Node, Prefab, instantiate, Vec3, UITransform, randomRangeInt, Sprite, SpriteFrame, SpriteAtlas, resources, Color } from 'cc';
 
 const { ccclass, property } = _decorator;
 
@@ -18,6 +18,26 @@ export class TilemapGenerator extends Component {
 
     @property(Node)
     gridContainer: Node = null; // The parent node where tiles will be instantiated
+
+    @property(SpriteFrame)
+    fireSprite: SpriteFrame = null;
+
+    @property(SpriteFrame)
+    waterSprite: SpriteFrame = null;
+
+    @property(SpriteFrame)
+    earthSprite: SpriteFrame = null;
+
+    @property(SpriteFrame)
+    fireSpecialSprite: SpriteFrame = null;
+
+    @property(SpriteFrame)
+    waterSpecialSprite: SpriteFrame = null;
+
+    @property(SpriteFrame)
+    earthSpecialSprite: SpriteFrame = null;
+
+    // sprite.spriteFrame = this.earthSprite;
 
     @property
     arenaSize: number = 6; // 6x6 grid
@@ -132,22 +152,28 @@ export class TilemapGenerator extends Component {
         if (sprite) {
             switch (terrain) {
                 case TerrainType.Fire:
-                    sprite.color = new Color(255, 0, 0); // Red for Fire
+                    // sprite.color = new Color(255, 0, 0); // Red for Fire
+                    sprite.spriteFrame = this.fireSprite;
                     break;
                 case TerrainType.Water:
-                    sprite.color = new Color(0, 0, 255); // Blue for Water
+                    // sprite.color = new Color(0, 0, 255); // Blue for Water
+                    sprite.spriteFrame = this.waterSprite;
                     break;
                 case TerrainType.Earth:
-                    sprite.color = new Color(139, 69, 19); // Brown for Earth
+                    // sprite.color = new Color(139, 69, 19); // Brown for Earth
+                    sprite.spriteFrame = this.earthSprite;
                     // sprite.spriteFrame = this.earthSprite; // Use a mountain sprite
                     break;
                 case TerrainType.FireSpecial:
+                    // sprite.spriteFrame = this.fireSpecialSprite;
                     sprite.color = new Color(255, 165, 0); // Orange for special Fire
                     break;
                 case TerrainType.WaterSpecial:
+                    // sprite.spriteFrame = this.waterSpecialSprite;
                     sprite.color = new Color(0, 255, 255); // Cyan for special Water
                     break;
                 case TerrainType.EarthSpecial:
+                    // sprite.spriteFrame = this.earthSpecialSprite;
                     sprite.color = new Color(160, 82, 45); // Sienna for special Earth
                     break;
                 default:

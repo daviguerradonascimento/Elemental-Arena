@@ -9,9 +9,6 @@ export class GridMovement extends Component {
     @property
     gridSize: number = 720; // 6x6 grid
 
-    @property
-    maxMoveRange: number = 3;
-
     @property(Node)
     tileset: Node = null;
 
@@ -73,7 +70,7 @@ export class GridMovement extends Component {
         this.currentPositionAI = newAIPosition;
     }
 
-    moveToTarget(target: Vec3, isPlayer: boolean = true): Promise<void> {
+    moveToTarget(target: Vec3, isPlayer: boolean = true, maxMoveRange: number = 3): Promise<void> {
         return new Promise((resolve) => {
         if (this.isMovingPlayer && isPlayer){ resolve();  return;}
         if (this.isMovingAI && !isPlayer){  resolve();return;}
@@ -91,8 +88,7 @@ export class GridMovement extends Component {
 
         // Limit the path to the range
         
-
-        path = path.slice(0, this.maxMoveRange);
+        path = path.slice(0, maxMoveRange);
 
         if(isPlayer){
             this.isMovingPlayer = true;
@@ -101,28 +97,24 @@ export class GridMovement extends Component {
         }
 
   
-        let moveDuration = 0.2; // Time to move between tiles    
+        let moveDuration = 0.5; // Time to move between tiles    
         // let moveDuration = 0.2; // Time per tile
         let totalMoves = path.length;
         this.animation = nodeToBeMoved.getComponent(Animation);
         this.animation.play("Run");
-        // console.log('movimento:' + path)
         // Function to move character tile by tile
         const moveTile = (index: number) => {
             if (index >= totalMoves) {
                 // Movement is complete
                 if(isPlayer){
                     this.isMovingPlayer = false;
-                }else{
-                    this.isMovingAI = false;
-                }
-                this.animation.stop();
-                if(isPlayer){
                     this.currentPositionPlayer = path[path.length - 1];
                 }else{
+                    this.isMovingAI = false;
                     this.currentPositionAI = path[path.length - 1];
                 }
                 this.initializeGrid();
+                this.animation.stop();
                 resolve();
                 return path[path.length - 1];
             }
@@ -135,10 +127,8 @@ export class GridMovement extends Component {
                 .call(() => {
                     if(isPlayer){
                         this.currentPositionPlayer = path[path.length - 1];
-                        // this.playerNode.setPosition(path[path.length - 1]);
                     }else{
                         this.currentPositionAI = path[path.length - 1];
-                        // this.aiNode.setPosition(path[path.length - 1]);
                     }
                      // Update the current position after the move
                     moveTile(index + 1); // Move to the next tile after the current move finishes
