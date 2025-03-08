@@ -233,6 +233,7 @@ export class GridMovement extends Component {
             this.grid[gridY][gridX] = 0; // Mark the player's position as blocked
         }
         
+        console.log(this.grid);
     }
 
     isTileFree(x: number, y: number): boolean {

@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, UITransform, EventTouch, Vec3, Label, Button, director, game } from 'cc';
+import { _decorator, Component, Node, UITransform, EventTouch, Vec3, Label, Button, director, game, sys } from 'cc';
 import { AIController } from './AIController';
 import { GridMovement } from './GridMovement'; // Assuming GridMovement is being used for the player as well
 import { PlayerController } from './PlayerController';
@@ -27,8 +27,11 @@ export class GameController extends Component {
     @property(Label)
     turnNumberLabel: Label;
 
-    // @property(Button)
-    // restartButton: Button = null;
+    @property(Button)
+    saveButton: Button = null;
+
+    @property(Button)
+    loadButton: Button = null;
 
     private playerController: PlayerController;
     private aiController: AIController;
@@ -63,7 +66,8 @@ export class GameController extends Component {
 
         // Start the game with the player’s turn
         this.node.on(Node.EventType.TOUCH_START , this.onTouchEnd, this);
-        // this.restartButton.node.on('click', this.onRestartClick, this);
+        this.saveButton.node.on('click', this.onSaveButtonClick, this);
+        this.loadButton.node.on('click', this.onLoadButtonClick, this);
         this.startTurn();
     }
 
@@ -239,17 +243,54 @@ export class GameController extends Component {
             this.gameOverLabel.string = "You Wins!";
         }
         this.gameOverLabel.active = true;
-        // this.restartButton.node.active = true;
     }
 
-    // onRestartClick() {
-    //     // Reload the current scene to restart the game
+    onSaveButtonClick() {
+        const gameState = {
+            playerPosition: this.player.position,
+            aiPosition: this.ai.position,
+            playerHealth: this.playerController.currentHealth,
+            aiHealth: this.aiController.currentHealth,
+            playerTurn: this.playerTurn,
+            turn: this.turn,
+            terrainGrid: this.tileMapController.getTerrainGridData() // Ensure you have a method to get terrain data
+        };
+        console.log(this.tileMapController.getTerrainGridData())
+        sys.localStorage.setItem('gameState', JSON.stringify(gameState));
+        console.log("Game Saved");
+    }
+
+    onLoadButtonClick() {
+        const savedState = sys.localStorage.getItem('gameState');
+        if (savedState) {
+            const gameState = JSON.parse(savedState);
+    
+            this.player.setPosition(new Vec3(gameState.playerPosition.x, gameState.playerPosition.y, gameState.playerPosition.z));
+            this.ai.setPosition(new Vec3(gameState.aiPosition.x, gameState.aiPosition.y, gameState.aiPosition.z));
+    
+            this.playerController.currentHealth = gameState.playerHealth;
+            this.playerController.updateHealthBar();
+            this.aiController.currentHealth = gameState.aiHealth;
+            this.aiController.updateHealthBar();
+            this.playerTurn = gameState.playerTurn;
+            this.turn = gameState.turn;
+            this.turnNumberLabel.string = "Turn: " + (this.turn-1);
+
+            if (this.playerTurn) {
+                this.turnInfoLabel.string = "Your Turn";
+            } else {
+                this.turnInfoLabel.string = "Enemy Turn";
+            }
 
 
-    //     setTimeout(() => {
-    //         // Reload the scene as if it's the first time
-    //         director.loadScene('mainMenu');
-    //     }, 100); // Adjust delay if necessary
-    // }
+            this.gridMovement.initializeGrid();
+
+            this.tileMapController.loadTerrainGridData(gameState.terrainGrid); // Ensure you have a method for this
+            console.log(gameState.terrainGrid)
+        } else {
+            console.log("No saved game found.");
+        }
+    }
+
     
 }

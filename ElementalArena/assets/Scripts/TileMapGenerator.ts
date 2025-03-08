@@ -46,6 +46,7 @@ export class TilemapGenerator extends Component {
     tileSize: number = 120; // Tile size (adjust as needed)
 
     private tileData: TerrainType[][] = [];
+    private tiles: Node[][] = [];
 
     private Sprite: Sprite;
 
@@ -142,7 +143,14 @@ export class TilemapGenerator extends Component {
         console.log(`Created ${terrain} tile at ${position.x}, ${position.y}`);
     
         this.setTileAppearance(tileNode, terrain);
+
+        if (!this.tiles[y]) {
+            this.tiles[y] = [];
+        }
+
+        this.tiles[y][x] = tileNode;
     }
+
 
     
 
@@ -150,6 +158,7 @@ export class TilemapGenerator extends Component {
         const sprite = tileNode.getComponent(Sprite); // Assuming the tile uses a Sprite component
     
         if (sprite) {
+            sprite.color = new Color(255, 255, 255);
             switch (terrain) {
                 case TerrainType.Fire:
                     // sprite.color = new Color(255, 0, 0); // Red for Fire
@@ -166,15 +175,18 @@ export class TilemapGenerator extends Component {
                     break;
                 case TerrainType.FireSpecial:
                     // sprite.spriteFrame = this.fireSpecialSprite;
+                    sprite.spriteFrame = this.fireSprite
                     sprite.color = new Color(255, 165, 0); // Orange for special Fire
                     break;
                 case TerrainType.WaterSpecial:
                     // sprite.spriteFrame = this.waterSpecialSprite;
-                    sprite.color = new Color(0, 255, 255); // Cyan for special Water
+                    sprite.spriteFrame = this.waterSprite
+                    sprite.color = new Color(0, 0, 255); // Cyan for special Water
                     break;
                 case TerrainType.EarthSpecial:
                     // sprite.spriteFrame = this.earthSpecialSprite;
-                    sprite.color = new Color(160, 82, 45); // Sienna for special Earth
+                    sprite.spriteFrame = this.earthSprite
+                    sprite.color = new Color(0, 100, 0); // Sienna for special Earth
                     break;
                 default:
                     sprite.color = new Color(255, 255, 255); // Default color (white)
@@ -197,4 +209,67 @@ export class TilemapGenerator extends Component {
     getTerrainAt(x: number, y: number): TerrainType {
         return this.tileData[y]?.[x] || TerrainType.Earth; // Default to Earth
     }
+    
+    saveTerrainData() {
+        const terrainData = this.getTerrainGridData();
+        const terrainDataStr = JSON.stringify(terrainData);  // Serialize the grid data into a JSON string
+        localStorage.setItem('terrainData', terrainDataStr);  // Save to localStorage (or any other method you prefer)
+        console.log("Terrain data saved:", terrainData);
+    }
+
+    loadTerrainData() {
+        const savedTerrainDataStr = localStorage.getItem('terrainData');
+        
+        if (savedTerrainDataStr) {
+            const savedTerrainData = JSON.parse(savedTerrainDataStr);  // Deserialize the saved data
+            this.loadTerrainGridData(savedTerrainData);  // Load the data into the grid
+            console.log("Terrain data loaded:", savedTerrainData);
+        } else {
+            console.error("No terrain data found to load.");
+        }
+    }
+
+    getTerrainGridData(): any {
+        let terrainGrid = [];
+    
+        for (let y = 0; y < this.arenaSize; y++) {  // Use this.arenaSize for scalability
+            let row = [];
+            for (let x = 0; x < this.arenaSize; x++) {
+                let terrainType = this.getTerrainAt(x, y); // Retrieve the terrain type for the tile
+                row.push(terrainType);
+            }
+            terrainGrid.push(row);
+        }
+    
+        return terrainGrid;
+    }
+    
+    loadTerrainGridData(terrainGrid: any) {
+        for (let y = 0; y < this.arenaSize; y++) {  // Iterate over rows first
+            for (let x = 0; x < this.arenaSize; x++) {  // Then iterate over columns
+                let terrainType = terrainGrid[y][x];  // Get the terrain type from saved data (row-major)
+                this.setTerrainAt(x, y, terrainType);  // Set the terrain for the tile
+            }
+        }
+    }
+
+    setTerrainAt(x: number, y: number, terrainType: TerrainType) {
+        let tileNode = this.getTileAt(x, y);  // Get the tile node based on the grid position
+        if (tileNode) {
+            // Set the terrain appearance based on the terrain type
+            this.setTileAppearance(tileNode, terrainType);
+        } else {
+            console.error("No tile found at position:", x, y);
+        }
+    }
+
+    getTileAt(x: number, y: number): Node | null {
+        if (x < 0 || y < 0 || x >= this.arenaSize || y >= this.arenaSize) {
+            console.error("Invalid grid coordinates:", x, y);
+            return null; // Invalid position
+        }
+
+        return this.tiles[y]?.[x] || null;  // Return the tile node at the specified position
+    }
+    
 }
