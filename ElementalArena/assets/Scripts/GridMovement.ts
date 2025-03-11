@@ -1,10 +1,10 @@
-import { _decorator, Component, Node, Vec3, systemEvent, SystemEvent, SystemEventType, EventKeyboard, KeyCode, tween, Animation, UITransform } from 'cc';
+import { _decorator, Component, Node, Vec3, tween, Animation } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('GridMovement')
 export class GridMovement extends Component {
     @property
-    tileSize: number = 120; // Adjust based on your grid size
+    tileSize: number = 120;
 
     @property
     gridSize: number = 720; // 6x6 grid
@@ -13,7 +13,7 @@ export class GridMovement extends Component {
     tileset: Node = null;
 
     
-    private animation: Animation = null; // Reference to the character's animation component
+    private animation: Animation = null;
 
     // @property([Node])
     // players: Node[] = [];
@@ -32,7 +32,7 @@ export class GridMovement extends Component {
     public isMovingAI: boolean = false;
     public currentPositionPlayer: Vec3 = new Vec3(50, -300, 0);
     public currentPositionAI: Vec3 = new Vec3(50, -300, 0);
-    public gridOrigin: Vec3 = new Vec3(-360, -360, 0); // Adjust based on Tiled origin
+    public gridOrigin: Vec3 = new Vec3(-360, -360, 0);
 
     public grid: number[][] = [];
     
@@ -97,8 +97,7 @@ export class GridMovement extends Component {
         }
 
   
-        let moveDuration = 0.5; // Time to move between tiles    
-        // let moveDuration = 0.2; // Time per tile
+        let moveDuration = 0.5; // Time to move between tiles
         let totalMoves = path.length;
         this.animation = nodeToBeMoved.getComponent(Animation);
         this.animation.play("Run");
@@ -106,6 +105,7 @@ export class GridMovement extends Component {
         const moveTile = (index: number) => {
             if (index >= totalMoves) {
                 // Movement is complete
+
                 if(isPlayer){
                     this.isMovingPlayer = false;
                     this.currentPositionPlayer = path[path.length - 1];
@@ -114,8 +114,14 @@ export class GridMovement extends Component {
                     this.currentPositionAI = path[path.length - 1];
                 }
                 this.initializeGrid();
-                this.animation.stop();
-                resolve();
+
+                this.playAnimation("Attack");
+                this.animation.on('finished', () => {
+                    this.playAnimation("Idle");
+                    resolve();
+                }, this);
+                
+
                 return path[path.length - 1];
             }
     
@@ -140,12 +146,11 @@ export class GridMovement extends Component {
             moveTile(0);
             return path[path.length - 1]
         });
-        // console.log("Path to move:", path);
     }
     
     playAnimation(animName: string) {
         if (this.animation) {
-            this.animation.play();
+            this.animation.play(animName);
         }
     }
 
@@ -159,7 +164,7 @@ export class GridMovement extends Component {
         // Ensure start and end are within the grid bounds and passable
         if (grid[endY][endX] === 0) {
             console.log("end point is blocked");
-            return []; // No valid path if start or end is blocked
+            return []; // No valid path if end is blocked
         }
     
         let openList: Node[] = [];

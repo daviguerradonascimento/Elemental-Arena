@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "sorlosheet.tsx",
     "expandedProjectPaths": [
     ],
     "fileStates": {
@@ -39,7 +39,7 @@
             "scale": 1.2587499999999998,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 480.23833167825234,
+                "x": 480.635551142006,
                 "y": 480.2383316782523
             }
         },
@@ -81,24 +81,18 @@
     "map.width": 6,
     "openFiles": [
         "Map.tmx",
-        "Dungeon_Tileset.tsx",
-        "sorlosheet.tsx",
-        "GridMap.tmx",
-        "match3_sheet_cut.tsx",
-        "GridMapArena2.tmx",
-        "match3_sheet_cut_redimensioned.tsx",
-        "testing.tmx"
+        "sorlosheet.tsx"
     ],
     "project": "TileMap.tiled-project",
     "recentFiles": [
         "Map.tmx",
+        "sorlosheet.tsx",
         "Dungeon_Tileset.tsx",
         "testing.tmx",
         "match3_sheet_cut_redimensioned.tsx",
         "GridMapArena2.tmx",
         "match3_sheet_cut.tsx",
         "GridMap.tmx",
-        "sorlosheet.tsx",
         "GridMapArena.tmx",
         "match3_sheet_cut_120.tsx",
         "match3_sheet.tsx"

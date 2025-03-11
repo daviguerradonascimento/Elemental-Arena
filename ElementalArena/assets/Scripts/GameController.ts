@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, UITransform, EventTouch, Vec3, Label, Button, director, game, sys } from 'cc';
+import { _decorator, Component, Node, UITransform, EventTouch, Vec3, Label, Button, sys } from 'cc';
 import { AIController } from './AIController';
 import { GridMovement } from './GridMovement'; // Assuming GridMovement is being used for the player as well
 import { PlayerController } from './PlayerController';
@@ -10,10 +10,10 @@ const { ccclass, property } = _decorator;
 @ccclass('GameController')
 export class GameController extends Component {
     @property(Node)
-    player: Node; // Reference to the player node
+    player: Node;
 
     @property(Node)
-    ai: Node; // Reference to the AI node
+    ai: Node;
 
     @property
     playerTurn: boolean = true; // Boolean to track whose turn it is
@@ -49,7 +49,6 @@ export class GameController extends Component {
         this.combatController = this.node.getComponent(CombatController);
         this.tileMapController = this.node.getComponent(TilemapGenerator);
 
-        // this.restartButton.node.active = false;
         this.gameOverLabel.active = false;
         this.gameOverLabel.string = '';
 
@@ -83,7 +82,6 @@ export class GameController extends Component {
             this.aiController.enableControls(true); // Enable AI controls
             this.playerController.enableControls(false); // Disable player controls during AI’s turn
 
-            // AI takes its turn (you can make this behavior asynchronous)
             this.startAITurn();
         }
     }
@@ -119,7 +117,7 @@ export class GameController extends Component {
         let gridPlayer = this.tileMapController.worldPosToGridCoords(this.player.position, this.gridMovement.gridOrigin, this.gridMovement.tileSize)
         let gridAI = this.tileMapController.worldPosToGridCoords(this.ai.position, this.gridMovement.gridOrigin, this.gridMovement.tileSize)
         let damage = this.combatController.calculateDamage( this.tileMapController.getTerrainAt(gridPlayer.x, gridPlayer.y),  this.tileMapController.getTerrainAt(gridAI.x, gridAI.y), this.playerController.baseDamage)
-
+        await this.tileMapController.playChildAnimation(this.tileMapController.getTileAt(gridAI.x, gridAI.y), this.tileMapController.getTerrainAt(gridPlayer.x, gridPlayer.y))
         this.aiController.takeDamage(damage);
 
         if (this.isGameOver()) {
@@ -132,9 +130,6 @@ export class GameController extends Component {
     async startAITurn() {
         if (this.playerTurn) return;
     
-        // Update positions from actual node positions
-       
-
        if (this.player) {
             this.gridMovement.currentPositionAI = this.ai.position;
             this.gridMovement.currentPositionPlayer = this.player.position;
@@ -153,6 +148,8 @@ export class GameController extends Component {
             let gridPlayer = this.tileMapController.worldPosToGridCoords(this.player.position, this.gridMovement.gridOrigin, this.gridMovement.tileSize)
             let gridAI = this.tileMapController.worldPosToGridCoords(this.ai.position, this.gridMovement.gridOrigin, this.gridMovement.tileSize)
             let damage = this.combatController.calculateDamage(this.tileMapController.getTerrainAt(gridAI.x, gridAI.y), this.tileMapController.getTerrainAt(gridPlayer.x, gridPlayer.y), this.playerController.baseDamage)
+            await this.tileMapController.playChildAnimation(this.tileMapController.getTileAt(gridPlayer.x, gridPlayer.y), this.tileMapController.getTerrainAt(gridAI.x, gridAI.y))
+
             this.playerController.takeDamage(damage);
         }
         
@@ -166,7 +163,8 @@ export class GameController extends Component {
 
     getBestMoveAI(): Vec3 | null {
         let maxDamage = -Infinity;
-        let bestMove: Vec3 | null = this.tileMapController.worldPosToGridCoords(this.gridMovement.currentPositionAI, this.gridMovement.gridOrigin, this.gridMovement.tileSize);
+        let actualPosition = this.tileMapController.worldPosToGridCoords(this.gridMovement.currentPositionAI, this.gridMovement.gridOrigin, this.gridMovement.tileSize);
+        let bestMove: Vec3 | null = new Vec3(actualPosition.x, actualPosition.y, 0);
 
         // Loop over all possible tiles within movement range
         
@@ -238,9 +236,9 @@ export class GameController extends Component {
         
         // Update the message based on who won
         if (this.playerController.currentHealth <= 0) {
-            this.gameOverLabel.string = "Enemy Wins!";
+            this.gameOverLabel.string = "Enemy Win!";
         } else if (this.aiController.currentHealth <= 0) {
-            this.gameOverLabel.string = "You Wins!";
+            this.gameOverLabel.string = "You Win!";
         }
         this.gameOverLabel.active = true;
     }
@@ -267,6 +265,8 @@ export class GameController extends Component {
     
             this.player.setPosition(new Vec3(gameState.playerPosition.x, gameState.playerPosition.y, gameState.playerPosition.z));
             this.ai.setPosition(new Vec3(gameState.aiPosition.x, gameState.aiPosition.y, gameState.aiPosition.z));
+            this.gridMovement.currentPositionPlayer = gameState.playerPosition;
+            this.gridMovement.currentPositionAI = gameState.aiPosition;
     
             this.playerController.currentHealth = gameState.playerHealth;
             this.playerController.updateHealthBar();
@@ -278,10 +278,16 @@ export class GameController extends Component {
 
             if (this.playerTurn) {
                 this.turnInfoLabel.string = "Your Turn";
+                this.aiController.enableControls(false);
+                this.playerController.enableControls(true);
             } else {
                 this.turnInfoLabel.string = "Enemy Turn";
+                this.aiController.enableControls(true);
+                this.playerController.enableControls(false);
             }
 
+            this.gameOverLabel.active = false;
+            this.gameOverLabel.string = '';
 
             this.gridMovement.initializeGrid();
 

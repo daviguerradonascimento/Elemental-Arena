@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Prefab, instantiate, Vec3, UITransform, randomRangeInt, Sprite, SpriteFrame, SpriteAtlas, resources, Color } from 'cc';
+import { _decorator, Component, Node, Prefab, instantiate, Vec3, Sprite, SpriteFrame, Color, Animation } from 'cc';
 
 const { ccclass, property } = _decorator;
 
@@ -14,10 +14,10 @@ enum TerrainType {
 @ccclass('TilemapGenerator')
 export class TilemapGenerator extends Component {
     @property(Prefab)
-    tilePrefab: Prefab = null; // Assign a tile prefab in the editor
+    tilePrefab: Prefab = null;
 
     @property(Node)
-    gridContainer: Node = null; // The parent node where tiles will be instantiated
+    gridContainer: Node = null;
 
     @property(SpriteFrame)
     fireSprite: SpriteFrame = null;
@@ -53,22 +53,6 @@ export class TilemapGenerator extends Component {
     start() {
         this.generateTilemap();
     }
-
-    // generateTilemap() {
-    //     this.tileData = [];
-
-    //     for (let y = 0; y < this.arenaSize; y++) {
-    //         this.tileData[y] = [];
-
-    //         for (let x = 0; x < this.arenaSize; x++) {
-    //             let terrain = this.getRandomTerrain();
-    //             this.tileData[y][x] = terrain;
-    //             this.createTile(x, y, terrain);
-    //         }
-    //     }
-
-    //     console.log("Generated Tilemap:", this.tileData);
-    // }
 
     generateTilemap() {
         this.tileData = [];
@@ -155,38 +139,27 @@ export class TilemapGenerator extends Component {
     
 
     setTileAppearance(tileNode: Node, terrain: TerrainType) {
-        const sprite = tileNode.getComponent(Sprite); // Assuming the tile uses a Sprite component
-    
+        const sprite = tileNode.getComponent(Sprite); 
         if (sprite) {
-            sprite.color = new Color(255, 255, 255);
+            sprite.color = new Color(255, 255, 255); 
             switch (terrain) {
                 case TerrainType.Fire:
-                    // sprite.color = new Color(255, 0, 0); // Red for Fire
                     sprite.spriteFrame = this.fireSprite;
                     break;
                 case TerrainType.Water:
-                    // sprite.color = new Color(0, 0, 255); // Blue for Water
                     sprite.spriteFrame = this.waterSprite;
                     break;
                 case TerrainType.Earth:
-                    // sprite.color = new Color(139, 69, 19); // Brown for Earth
                     sprite.spriteFrame = this.earthSprite;
-                    // sprite.spriteFrame = this.earthSprite; // Use a mountain sprite
                     break;
                 case TerrainType.FireSpecial:
-                    // sprite.spriteFrame = this.fireSpecialSprite;
-                    sprite.spriteFrame = this.fireSprite
-                    sprite.color = new Color(255, 165, 0); // Orange for special Fire
+                    sprite.spriteFrame = this.fireSpecialSprite
                     break;
                 case TerrainType.WaterSpecial:
-                    // sprite.spriteFrame = this.waterSpecialSprite;
-                    sprite.spriteFrame = this.waterSprite
-                    sprite.color = new Color(0, 0, 255); // Cyan for special Water
+                    sprite.spriteFrame = this.waterSpecialSprite
                     break;
                 case TerrainType.EarthSpecial:
-                    // sprite.spriteFrame = this.earthSpecialSprite;
-                    sprite.spriteFrame = this.earthSprite
-                    sprite.color = new Color(0, 100, 0); // Sienna for special Earth
+                    sprite.spriteFrame = this.earthSpecialSprite
                     break;
                 default:
                     sprite.color = new Color(255, 255, 255); // Default color (white)
@@ -200,8 +173,8 @@ export class TilemapGenerator extends Component {
         let gridY = Math.floor((worldPos.y - gridOrigin.y) / tileSize);
     
         // Ensure grid coordinates are within bounds (0 to 5 for a 6x6 grid)
-        gridX = Math.max(0, Math.min(5, gridX));
-        gridY = Math.max(0, Math.min(5, gridY));
+        gridX = Math.max(0, Math.min((this.arenaSize -1), gridX));
+        gridY = Math.max(0, Math.min((this.arenaSize -1), gridY));
     
         return { x: gridX, y: gridY };
     }
@@ -213,7 +186,7 @@ export class TilemapGenerator extends Component {
     saveTerrainData() {
         const terrainData = this.getTerrainGridData();
         const terrainDataStr = JSON.stringify(terrainData);  // Serialize the grid data into a JSON string
-        localStorage.setItem('terrainData', terrainDataStr);  // Save to localStorage (or any other method you prefer)
+        localStorage.setItem('terrainData', terrainDataStr);  // Save to localStorage
         console.log("Terrain data saved:", terrainData);
     }
 
@@ -232,10 +205,10 @@ export class TilemapGenerator extends Component {
     getTerrainGridData(): any {
         let terrainGrid = [];
     
-        for (let y = 0; y < this.arenaSize; y++) {  // Use this.arenaSize for scalability
+        for (let y = 0; y < this.arenaSize; y++) {
             let row = [];
             for (let x = 0; x < this.arenaSize; x++) {
-                let terrainType = this.getTerrainAt(x, y); // Retrieve the terrain type for the tile
+                let terrainType = this.getTerrainAt(x, y);
                 row.push(terrainType);
             }
             terrainGrid.push(row);
@@ -243,12 +216,76 @@ export class TilemapGenerator extends Component {
     
         return terrainGrid;
     }
+
+    playChildAnimation(tileNode: Node, terrainType: TerrainType) : Promise<void> {
+        // Find the child node by name
+        return new Promise((resolve) => {
+            const childNode = tileNode.getChildByName("Sfx");
+        
+            let parentWidth = tileNode.width;
+            let parentHeight = tileNode.height;
+
+            // Set sprite size to match parent's size
+            childNode.width = parentWidth;
+            childNode.height = parentHeight;
+            if (childNode) {
+                const animation = childNode.getComponent(Animation);
+                console.log(childNode)
+                if (animation) {
+                    switch (terrainType) {
+                        case TerrainType.Fire: 
+                        case TerrainType.FireSpecial:
+                            animation.play("FireDamage");
+                            animation.on('finished', () => {
+                                const sprite = childNode.getComponent(Sprite);
+                                if (sprite) {
+                                    sprite.spriteFrame = null;
+                                }
+                                resolve();
+                            }, this);
+                            break;
+                        case TerrainType.Water:
+                        case TerrainType.WaterSpecial:
+                            animation.play("WaterDamage");
+                            animation.on('finished', () => {
+                                const sprite = childNode.getComponent(Sprite);
+                                if (sprite) {
+                                    sprite.spriteFrame = null;
+                                }
+                                resolve();
+                            }, this);
+                            break;
+                        case TerrainType.Earth:
+                        case TerrainType.EarthSpecial:
+                            animation.play("EarthDamage");
+                            animation.on('finished', () => {
+                                const sprite = childNode.getComponent(Sprite);
+                                if (sprite) {
+                                    sprite.spriteFrame = null;
+                                }
+                                resolve();
+                            }, this);
+                            break;
+                        default: 
+                        resolve();
+                            break;
+                    }
+                } else {
+                    console.log("No Animation component found on child node.");
+                    resolve();
+                }
+            } else {
+                console.warn("Child node with animation not found.");
+                resolve();
+            }
+        });
+    }
     
     loadTerrainGridData(terrainGrid: any) {
-        for (let y = 0; y < this.arenaSize; y++) {  // Iterate over rows first
-            for (let x = 0; x < this.arenaSize; x++) {  // Then iterate over columns
-                let terrainType = terrainGrid[y][x];  // Get the terrain type from saved data (row-major)
-                this.setTerrainAt(x, y, terrainType);  // Set the terrain for the tile
+        for (let y = 0; y < this.arenaSize; y++) {  // rows
+            for (let x = 0; x < this.arenaSize; x++) {  // columns
+                let terrainType = terrainGrid[y][x]; 
+                this.setTerrainAt(x, y, terrainType);
             }
         }
     }
@@ -258,6 +295,9 @@ export class TilemapGenerator extends Component {
         if (tileNode) {
             // Set the terrain appearance based on the terrain type
             this.setTileAppearance(tileNode, terrainType);
+            tileNode.name = `Tile_${x}_${y}_${terrainType}`;
+            this.tiles[y][x] = tileNode;
+            this.tileData[y][x] = terrainType;
         } else {
             console.error("No tile found at position:", x, y);
         }
