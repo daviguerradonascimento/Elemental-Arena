@@ -38,11 +38,6 @@ To set up the project locally:
     ```bash
     cd elemental-arena
     ```
-3.  Install dependencies:
-
-    ```bash
-    npm install
-    ```
 
 ## Usage
 
