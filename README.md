@@ -1,4 +1,5 @@
 # Elemental Arena
+![elemental_arena](https://github.com/user-attachments/assets/b6f9da9b-2368-4011-8402-ea31ca42e280)
 
 ## Project Overview
 
